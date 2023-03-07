@@ -1,0 +1,19 @@
+---
+title: "EDDA Assignment 2"
+author: "Agnes Nikki Tim, group 38"
+date: "13 February 2023"
+output: pdf_document
+fontsize: 11pt
+highlight: tango
+---
+
+# Exercise 1: Military Coups
+
+### To study the influence of different political and geographical variables on the number of military coups, these data are collected for several countries in the file [coups.txt](https://canvas.vu.nl/courses/68030/files/6051349?wrap=1 "coups.txt") The meaning of the different variables:
+
+### Perform Poisson regression on the full data set, taking *miltcoup* as response variable. Comment on your findings.
+
+```{r}
+coups <- read.table("coups.txt", header=TRUE)
+coups
+```

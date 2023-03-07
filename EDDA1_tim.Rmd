@@ -1,0 +1,40 @@
+---
+title: "EDDA Assignment 2"
+author: "Agnes Nikki Tim, group 38"
+date: "13 February 2023"
+output: pdf_document
+fontsize: 11pt
+highlight: tango
+---
+
+# Exercise 1: Trees
+
+### The *Amsterdamsche Bos* forestry wishes to estimate the total wood volume of the trees on its domain. To this end the forestry has cut a sample of 59 trees of their most prevalent types beech and oak and collected the data from the cut trees in the file [treeVolume.txt](https://canvas.vu.nl/courses/68030/files/6051344?wrap=1 "treeVolume.txt"). The volume of these trees alongside with their height and trunk diameter have been measured; these are the columns *volume*, *height* and *diameter*, respectively. Column *type* gives the tree type: *Beech* or *Oak*. The tree type, height and diameter can be measured in the field without sacrificing the tree. The forestry hypothesizes that these are predictive of the wood volume.
+
+## A
+
+### Investigate whether the tree type influences volume by performing ANOVA, without taking diameter and height into account. Can a t-test be related to the above ANOVA test? Estimate the volumes for the two tree types.
+
+```{r}
+tree_data <- read.table("treevolume.txt", header = TRUE)
+```
+
+```{r}
+model <- aov(volume ~ type, data = tree_data)
+summary(model)
+```
+
+The resulting p-value is larger than 0.05 and thus the hypothesis that tree type influences volume is rejected.
+
+```{r}
+# Estimate the volumes for the two tree types
+aggregate(volume ~ type, data = tree_data, FUN = mean)
+```
+
+Because two groups are compared in the above ANOVA, it is possible to use a t-test
+
+```{r}
+t.test(volume ~ type, data = tree_data, var.equal = TRUE)
+```
+
+### Now include *diameter* and *height* as explanatory variables into the analysis. Investigate whether the influence of diameter on volume is similar for the both tree types. Do the same for the influence of height on volume. (Consider at most one (relevant) pairwise interaction per model.) Comment.

@@ -1,0 +1,26 @@
+---
+title: "EDDA Assignment 2"
+author: "Agnes Nikki Tim, group 38"
+date: "13 February 2023"
+output: pdf_document
+fontsize: 11pt
+highlight: tango
+---
+
+# Exercise 1: Trees
+
+### The *Amsterdamsche Bos* forestry wishes to estimate the total wood volume of the trees on its domain. To this end the forestry has cut a sample of 59 trees of their most prevalent types beech and oak and collected the data from the cut trees in the file [treeVolume.txt](https://canvas.vu.nl/courses/68030/files/6051344?wrap=1 "treeVolume.txt")[Download treeVolume.txt](https://canvas.vu.nl/courses/68030/files/6051344/download?download_frd=1). The volume of these trees alongside with their height and trunk diameter have been measured; these are the columns *volume*, *height* and *diameter*, respectively. Column *type* gives the tree type: *Beech* or *Oak*. The tree type, height and diameter can be measured in the field without sacrificing the tree. The forestry hypothesizes that these are predictive of the wood volume.
+
+## A
+
+### Investigate whether the tree type influences volume by performing ANOVA, without taking diameter and height into account. Can a t-test be related to the above ANOVA test? Estimate the volumes for the two tree types.
+
+```{r}
+trees = read.table("treeVolume.txt")
+trees
+```
+
+```{r, echo=F}
+birthweight <- read.table("birthweight.txt", header=TRUE)
+
+```
