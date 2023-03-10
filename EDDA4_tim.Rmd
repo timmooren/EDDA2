@@ -9,7 +9,7 @@ highlight: tango
 
 # Exercise 1: Military Coups
 
-### To study the influence of different political and geographical variables on the number of military coups, these data are collected for several countries in the file [coups.txt](https://canvas.vu.nl/courses/68030/files/6051349?wrap=1 "coups.txt") The meaning of the different variables:
+### To study the influence of different political and geographical variables on the number of military coups, these data are collected for several countries in the file [coups.txt](https://canvas.vu.nl/courses/68030/files/6051349?wrap=1 "coups.txt")
 
 ### Perform Poisson regression on the full data set, taking *miltcoup* as response variable. Comment on your findings.
 
@@ -17,3 +17,58 @@ highlight: tango
 coups <- read.table("coups.txt", header=TRUE)
 coups
 ```
+
+Check model assumptions:
+
+```{r}
+pairs(coups)
+```
+
+```{r}
+summary(glm(miltcoup ~ ., data = coups, family = "poisson"))
+```
+
+To study the influence of different political and geographical variables on the number of military coups, poisson regression was performed.
+
+The significant coefficient variables were: oligarchy, pollib and parties.
+
+### Use the step-down approach (using output of the function *summary*) to reduce the number of explanatory variables. Compare the resulting model with your findings in a).
+
+For the step-down technique, the variable with the highest p-value is removed sequentially. The first variable to be removed is numelec.
+
+```{r}
+summary(glm(miltcoup ~ oligarchy + pollib + parties + pctvote + popn + size + numregim, 
+            data = coups, family = "poisson"))
+```
+
+The next variable to remove is numregim.
+
+```{r}
+summary(glm(miltcoup ~ oligarchy + pollib + parties + pctvote + popn + size, 
+            data = coups, family = "poisson"))
+```
+
+The next variable to remove is size.
+
+```{r}
+summary(glm(miltcoup ~ oligarchy + pollib + parties + pctvote + popn, 
+            data = coups, family = "poisson"))
+```
+
+The next variable to remove is popn.
+
+```{r}
+summary(glm(miltcoup ~ oligarchy + pollib + parties + pctvote, 
+            data = coups, family = "poisson"))
+```
+
+The next variable to remove is pctvote.
+
+```{r}
+summary(glm(miltcoup ~ oligarchy + pollib + parties, 
+            data = coups, family = "poisson"))
+```
+
+All remaining variables are significant.
+
+### Using the model from b), predict the number of coups for a hypothetical country for all the three levels of political liberalization and the (overall) averages of all the other (numerical) characteristics. Comment on your findings.

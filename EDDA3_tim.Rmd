@@ -7,20 +7,91 @@ fontsize: 11pt
 highlight: tango
 ---
 
-# Exercise 1: Trees
+# Exercise 3: Titanic
 
-### The *Amsterdamsche Bos* forestry wishes to estimate the total wood volume of the trees on its domain. To this end the forestry has cut a sample of 59 trees of their most prevalent types beech and oak and collected the data from the cut trees in the file [treeVolume.txt](https://canvas.vu.nl/courses/68030/files/6051344?wrap=1 "treeVolume.txt")[Download treeVolume.txt](https://canvas.vu.nl/courses/68030/files/6051344/download?download_frd=1). The volume of these trees alongside with their height and trunk diameter have been measured; these are the columns *volume*, *height* and *diameter*, respectively. Column *type* gives the tree type: *Beech* or *Oak*. The tree type, height and diameter can be measured in the field without sacrificing the tree. The forestry hypothesizes that these are predictive of the wood volume.
-
-## A
-
-### Investigate whether the tree type influences volume by performing ANOVA, without taking diameter and height into account. Can a t-test be related to the above ANOVA test? Estimate the volumes for the two tree types.
+### Study the data and give a few (\>1) summaries (graphics or tables). 
 
 ```{r}
-trees = read.table("treeVolume.txt")
-trees
+titanic = read.table("titanic.txt", header=T)
+titanic
 ```
 
-```{r, echo=F}
-birthweight <- read.table("birthweight.txt", header=TRUE)
+```{r}
+ggplot(data = titanic, aes(x = factor(Age), fill = factor(Survived))) + geom_bar(position = "dodge")
+```
+
+### ![]()
+
+```{r}
+ggplot(titanic, aes(Sex, fill = factor(Survived))) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent_format())
+```
+
+```{r}
+# Distribution of survivors by passenger class
+ggplot(titanic, aes(PClass, fill = factor(Survived))) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent_format())
+```
+
+### Fit a logistic regression model (no interactions yet) to investigate the association between the survival status and the predictors *PClass*, *Age* and *Sex*. 
+
+```{r}
+# Fit logistic regression model
+titanic_model <- glm(Survived ~ PClass + Age + Sex, data = titanic, family = binomial)
+
+# Model summary
+summary(titanic_model)
 
 ```
+
+### Interpret the results in terms of odds, comment.
+
+...
+
+### Investigate the interaction of predictor *Age* with *PClass*, and the interaction of *Age* with *Sex*. From this and a), choose (and justify) a resulting model. 
+
+```{r}
+# Fit extended logistic regression model
+titanic_model2 = glm(Survived ~ PClass * Age + Age * Sex, data = titanic, family = binomial)
+summary(titanic_model2)
+```
+
+ASK QUESTION ABOUT THIS
+
+We choose the last model.
+
+### For this model, report the estimate for the probability of survival for each combination of levels of the factors *PClass* and *Sex* for a person of age 55.
+
+```{r}
+summary(titanic_model2)$coefficients
+```
+
+### Propose a method to predict the survival status and a quality measure for your prediction and describe how you would implement that method (you do not need to implement it).
+
+### Another approach would be to apply a contingency table test and to investigate whether factor passenger class has an effect on the survival status and whether factor gender has an effect on the survival status. Implement the relevant test(s).
+
+```{r}
+# Create a contingency table of Pclass and Survived
+cont1 = table(titanic$PClass, titanic$Survived)
+cont
+```
+
+```{r}
+chisq.test(cont1)
+```
+
+```{r}
+# Create a contingency table of Sex and Survived
+cont2 = table(titanic$Sex, titanic$Survived)
+cont2
+```
+
+```{r}
+chisq.test(cont2)
+```
+
+### Is the second approach in d) wrong? Name both an advantage and a disadvantage of the two approaches, relative to each other.
+
+agnes weet antwoord
