@@ -37,4 +37,9 @@ Because two groups are compared in the above ANOVA, it is possible to use a t-te
 t.test(volume ~ type, data = tree_data, var.equal = TRUE)
 ```
 
+## B
+
 ### Now include *diameter* and *height* as explanatory variables into the analysis. Investigate whether the influence of diameter on volume is similar for the both tree types. Do the same for the influence of height on volume. (Consider at most one (relevant) pairwise interaction per model.) Comment.
+
+```{r}
+```
