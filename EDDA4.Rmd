@@ -1,0 +1,111 @@
+---
+title: "EDDA Assignment 2"
+author: "Agnes Nikki Tim, group 38"
+date: "13 February 2023"
+output: pdf_document
+fontsize: 11pt
+highlight: tango
+---
+
+# Exercise 1: Military Coups
+
+### To study the influence of different political and geographical variables on the number of military coups, these data are collected for several countries in the file [coups.txt](https://canvas.vu.nl/courses/68030/files/6051349?wrap=1 "coups.txt") The meaning of the different variables:
+
+### A Perform Poisson regression on the full data set, taking *miltcoup* as response variable. Comment on your findings.
+
+```{r}
+coups <- read.table("coups.txt", header=TRUE)
+coups
+
+hist(coups$miltcoup)
+pairs(coups)
+```
+
+The histogram of the data seems to resemble a Poisson distribution, so a Poisson regression can be performed. Moreover, is seems the explanatory variables are not correlated.
+
+```{r}
+# poisson
+coups$pollib<-factor(coups$pollib)
+coup_glm<-glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size+numelec+numregim,
+              family=poisson, data=coups)
+summary(coup_glm)
+```
+
+For the explanatory variables oligarchy, pollib2 and parties a p-value below 0.05 was found, meaning these variables have a significant effect on the number of military coups. Moreover, the residual deviance is slightly greater than the degrees of freedom, and with the dispersion parameter set at 1, this means the model has a reasonably good fit.
+
+### B Use the step-down approach (using output of the function *summary*) to reduce the number of explanatory variables. Compare the resulting model with your findings in a).
+
+The step-down method iteratively removes explanatory variables with a p-value above 0.05. It starts with all variables.
+
+```{r}
+# all variables
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size+numelec+numregim,
+            family=poisson, data=coups))
+# remove numelec
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size+numregim,
+            family=poisson, data=coups))
+# remove numregim
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size,
+            family=poisson, data=coups))
+# remove size
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn,               
+            family=poisson, data=coups))
+# remove popn
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote,
+            family=poisson, data=coups))
+# remove pctvote
+summary(glm(miltcoup~oligarchy+pollib+parties,
+            family=poisson, data=coups))
+
+```
+
+Once all non-significant variables are removed, the resulting model contains the variables oligarchy, pollib1, pollib2 and parties. Note that pollib1 is not significant, however, since pollib is a factor, either both are removed or none are. Since pollib2 is significant, it was decided for the factor to remain in the model. Notice how the three significant variables in this reduced model are exactly the variables that are significant in the model in a). The p-values of these three variables do differ in these two models: the variables oligarchy and pollib have a lower p-value in the reduced model than in the model of a); however the p-value of parties is higher in the reduced model. For the reduced model, the residual difference is even closer to the degrees of freedom than in the model from a), and its AIC score is lower thus this reduced model has a slightly better fit to the data.
+
+### C Using the model from b), predict the number of coups for a hypothetical country for all three levels of political liberalization and the (overall) averages of all the other (numerical) characteristics. Comment on your findings.
+
+For each level of political liberalization, the hypothetical country is made up of the averages of the other variables that correspond with that level.
+
+```{r}
+# hypothetical countries for all three levels of political liberalization
+# level 0
+level_0 <- coups[coups$pollib == 0,]
+hypothetical_0 <- data.frame(pollib=factor(0), 
+                          oligarchy=mean(level_0$oligarchy),
+                          parties=mean(level_0$parties),
+                          pctvote=mean(level_0$pctvote),
+                          popn=mean(level_0$popn),
+                          size=mean(level_0$size),
+                          numelec=mean(level_0$numelec),
+                          numregim=mean(level_0$numregim))
+
+level_1 <- coups[coups$pollib == 1,]
+hypothetical_1 <- data.frame(pollib=factor(1), 
+                          oligarchy=mean(level_1$oligarchy),
+                          parties=mean(level_1$parties),
+                          pctvote=mean(level_1$pctvote),
+                          popn=mean(level_1$popn),
+                          size=mean(level_1$size),
+                          numelec=mean(level_1$numelec),
+                          numregim=mean(level_1$numregim))
+
+level_2 <- coups[coups$pollib == 2,]
+hypothetical_2 <- data.frame(pollib=factor(2), 
+                          oligarchy=mean(level_2$oligarchy),
+                          parties=mean(level_2$parties),
+                          pctvote=mean(level_2$pctvote),
+                          popn=mean(level_2$popn),
+                          size=mean(level_2$size),
+                          numelec=mean(level_2$numelec),
+                          numregim=mean(level_2$numregim))
+```
+
+```{r}
+model <-glm(miltcoup~oligarchy+parties+pollib,
+            family=poisson, data=coups)
+# predictions
+predict(model, hypothetical_0, type = "response")
+predict(model, hypothetical_1, type = "response")
+predict(model, hypothetical_2, type = "response")
+```
+
+The predicted values are 2.98, 1.86 and 0.94 for political liberalization levels 0, 1 and 2 respectively. The average military coups for each level (0, 1, 2) are 3, 2.33 and 1.2 respectively. The predicted values are in line with the average military coups of the data for each level, however they are a bit on the lower side. Since the hypothetical countries consist of averaged values for all the numerical explanatory variables, it was expected the predicted values would be similar to the average values of the data.
