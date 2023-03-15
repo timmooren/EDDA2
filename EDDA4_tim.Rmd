@@ -7,7 +7,7 @@ fontsize: 11pt
 highlight: tango
 ---
 
-# Exercise 1: Military Coups
+# Exercise 4: Military Coups
 
 ### To study the influence of different political and geographical variables on the number of military coups, these data are collected for several countries in the file [coups.txt](https://canvas.vu.nl/courses/68030/files/6051349?wrap=1 "coups.txt")
 

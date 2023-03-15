@@ -15,14 +15,13 @@ highlight: tango
 
 ### Make some graphical summaries of the data.
 
-```{r}
+```{r, echo=F}
 expenses = read.table("expensescrime.txt", header=T)
-expenses
 ```
 
 The scatterplot matrix below was created to visualize the pairwise relationships between the explanatory variables. In this graph, a high collinearity between two variables corresponds with a linear relationship in the respective scatterplot.
 
-```{r}
+```{r, echo=F}
 pairs(expenses[, c("expend", "bad", "crime", "lawyers", "employ", "pop")])
 ```
 
@@ -48,35 +47,26 @@ Based on the pairs plot, it appears that the following variables may be correlat
 
 -   Employ - pop
 
-```{r}
-expend_bad_lm = lm(expend ~ bad, data=expenses)
-plot(residuals(expend_bad_lm), expenses$bad)
-```
+To check the assumptions for the model with all explanatory variables, the residuals should look normal and their spread should not vary with the fitted values.
 
-To check the assumptions the residuals should look normal and their spread should not vary with the fitted values.
-
-```{r}
-qqnorm(residuals(expend_bad_lm))
+```{r, echo=F}
+model <- lm(expend ~ bad + crime + lawyers + employ + pop, data = expenses)
+par(mfrow = c(1, 2))
+plot(residuals(model), expenses$expend)
+qqnorm(residuals(model))
 ```
 
 The residuals are not normally distributed. Therefore we discard the expenses \~ bad model.
 
-### Investigate the problem of influence points
+### Investigate the problem of influence point
 
-```{r}
-model <- lm(expend ~ bad + crime + lawyers + employ + pop, data = expenses)
-influence = influence.measures(model)
-influence
-```
+For each observation, the Cook's distance was determined to investigated the problem of influential points. Points with a Cook's distance larger than 1 are considered to be influence points (see plot below).
 
-For each observation, the Cook's distance was used to investigated the problem of influential points. Points with a Cook's distance larger than 1 are considered to be influence points.
-
-```{r}
+```{r, echo=F}
 dist = cooks.distance(model)
-dist
 ```
 
-```{r}
+```{r, echo=F}
 plot(dist, pch = 19, type="b", xlab = "Observation", ylab = "Cook's Distance", main = "Cook's Distances")
 ```
 
@@ -84,13 +74,13 @@ plot(dist, pch = 19, type="b", xlab = "Observation", ylab = "Cook's Distance", m
 
 Collinearity is the problem of linear relations between explanatory variables. The correlation matrix of the independent variables was calculated to investigate the issue.
 
-```{r}
+```{r, echo=F}
 cor(expenses[, c("bad", "crime", "lawyers", "employ", "pop")])
 ```
 
 Moreover, the Variance Inflation Factors (VIF) were examined.
 
-```{r}
+```{r, echo=F}
 library(car); vif(model)
 ```
 
@@ -100,7 +90,7 @@ If a VIF value is larger than 5, this gives reason for concern. The output sugge
 
 In the step-up technique predictors are sequentially added one at a time. The first variable to was chosen by finding the explanatory variable with the highest multiple R-squared value.
 
-```{r}
+```{r, echo=F, eval=F}
 summary(lm(expend ~ bad, data=expenses))
 summary(lm(expend ~ crime, data=expenses))
 summary(lm(expend ~ lawyers, data=expenses))
@@ -112,7 +102,7 @@ Employ is selected with
 
     Multiple R-squared:  0.954
 
-```{r}
+```{r, echo=F, eval=F}
 summary(lm(expend ~ employ + bad, data=expenses))
 summary(lm(expend ~ employ + crime, data=expenses))
 summary(lm(expend ~ employ + lawyers, data=expenses))
@@ -123,37 +113,15 @@ The variable lawyers is added to the model with
 
     Multiple R-squared:  0.9632
 
-```{r}
-summary(lm(expend ~ employ + lawyers + bad, data=expenses))
-summary(lm(expend ~ employ + lawyers + crime, data=expenses))
-summary(lm(expend ~ employ + lawyers + pop, data=expenses))
+None of the variables is significant when adding the remaining variables, so the resulting model only contains employ and lawyer. There may be collinearity among the explanatory variables, and one should actually avoid having two collinear explanatory variables in a model. This is something to keep in mind when tweaking the model further.
+
+```{r, echo=F}
+step_up = (lm(expend ~ employ + lawyers, data=expenses))
 ```
-
-The variable bad is added to the model with
-
-    Multiple R-squared:  0.9639
-
-```{r}
-summary(lm(expend ~ employ + lawyers + bad + crime, data=expenses))
-summary(lm(expend ~ employ + lawyers + bad + pop, data=expenses))
-```
-
-The variable pop is added to the model with
-
-    Adjusted R-squared:  0.9637 
-
-CONTINUE HERE
-
-```{r}
-step_up = (lm(expend ~ employ + lawyers + bad + pop + crime, data=expenses))
-summary(step_up)
-```
-
-The final step-up model contains all explanatory variables. However, when there is collinearity among the explanatory variables, one should actually avoid having two collinear explanatory variables in the model. This is something to keep in mind when tweaking the model further.
 
 ### Determine a 95% prediction interval for the *expend* using the model you preferred in b) for a (hypothetical) state with *bad*=50, *crime*=5000, *lawyers*=5000, *employ*=5000 and *pop*=5000.
 
-```{r}
+```{r, echo=F}
 newdata <- data.frame(bad = 50, crime = 5000, lawyers = 5000, employ = 5000, pop = 5000)
 pred <- predict(step_up, newdata, interval = "prediction", level = 0.95)
 pred
@@ -161,11 +129,13 @@ pred
 
 ### Can you improve this interval?
 
+Yes, perhaps by removing influence points.
+
 ### Apply the LASSO method to choose the relevant variables (with default parameters as in the lecture and *lambda*=*lambda.1se*)
 
 Lasso automatically shrink the coefficients of the insignificant variables or sets them to zero altogether.
 
-```{r}
+```{r, echo=F}
 library(glmnet)
 library(caret)
 set.seed(1)
@@ -178,27 +148,40 @@ test_data = expenses[-train_index, ]
 # select explanatory variables
 indep_vars = c("bad", "crime", "lawyers", "employ", "pop")
 x_train = train_data[indep_vars]
+x_train = data.matrix(x_train)
 y_train = train_data$expend
 
-x_train = data.matrix(x_train)
+x_test = test_data[indep_vars]
+x_test = data.matrix(x_test)
+
+y_test = test_data$expend
+```
+
+```{r}
 lasso_mod = glmnet(x_train, y_train, alpha = 1)
 plot(lasso_mod, label=T, xvar="lambda")
 cv_lasso = cv.glmnet(x_train, y_train, alpha=1, type.measure="mse")
 ```
 
-The model coefficients of the relevant variables selected by the LASSO model are shown below:
-
-```{r}
+```{r, echo=F}
 lambda_min = cv_lasso$lambda_min
 lambda_1se = cv_lasso$lambda.1se
-coef(lasso_mod, s=cv_lasso$lambda_min)
+coeficients = coef(lasso_mod, s=cv_lasso$lambda_min)
 ```
 
 Variables with coefficients close to zero indicates that these were not deemed relevant for predicting expenditure by the LASSO algorithm.
 
-```{r}
-y.pred=predict(lasso_mod, s=lambda_min, newx = x.test) 
-mse.lasso=mean((y.test-y.pred)^2)
+### Compare the resulting model with the model obtained in b)
+
+```{r, echo=F, eval=F}
+y_pred_lasso = predict(lasso_mod, s=lambda_min, newx = x_test) 
+mse_lasso = mean((y_test - y_pred_lasso)^2)
+mse_lasso
+
+mse <- function(sm) 
+    mean(sm$residuals^2)
+
+mse(model)
 ```
 
-### Compare the resulting model with the model obtained in b)
+The LASSO model was found to have a higher root mean squared error (293768.6) than the model obtained in b (44896.39). This implies that
