@@ -9,7 +9,7 @@ highlight: tango
 
 # Exercise 3: Titanic
 
-### Study the data and give a few (\>1) summaries (graphics or tables). 
+### Study the data and give a few (\>1) summaries (graphics or tables).
 
 ```{r}
 titanic = read.table("titanic.txt", header=T)
@@ -35,7 +35,7 @@ ggplot(titanic, aes(PClass, fill = factor(Survived))) +
   scale_y_continuous(labels = scales::percent_format())
 ```
 
-### Fit a logistic regression model (no interactions yet) to investigate the association between the survival status and the predictors *PClass*, *Age* and *Sex*. 
+### Fit a logistic regression model (no interactions yet) to investigate the association between the survival status and the predictors *PClass*, *Age* and *Sex*.
 
 ```{r}
 # Fit logistic regression model
@@ -50,7 +50,7 @@ summary(titanic_model)
 
 ...
 
-### Investigate the interaction of predictor *Age* with *PClass*, and the interaction of *Age* with *Sex*. From this and a), choose (and justify) a resulting model. 
+### Investigate the interaction of predictor *Age* with *PClass*, and the interaction of *Age* with *Sex*. From this and a), choose (and justify) a resulting model.
 
 ```{r}
 # Fit extended logistic regression model
